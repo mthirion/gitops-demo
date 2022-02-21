@@ -1,0 +1,4 @@
+resources:
+- myapp-dc.yaml
+- myapp-svc.yaml
+- myapp-rt.yaml
