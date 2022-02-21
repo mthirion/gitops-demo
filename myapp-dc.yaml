@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   annotations:
     alpha.image.policy.openshift.io/resolve-names: '*'
-    deployment.kubernetes.io/revision: "2"
     image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"myapp:1.0","namespace":"atest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"myapp\")].image","pause":"false"}]'
     openshift.io/generated-by: OpenShiftWebConsole
   labels:
