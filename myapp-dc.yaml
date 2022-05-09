@@ -12,7 +12,6 @@ metadata:
     app.kubernetes.io/name: myapp
     app.kubernetes.io/part-of: myapp-app
     app.openshift.io/runtime: myapp
-    app.openshift.io/runtime-namespace: atest
     app.openshift.io/runtime-version: "1.0"
   name: myapp
 spec:
@@ -42,6 +41,8 @@ spec:
         name: myapp
         ports:
         - containerPort: 8080
+          protocol: TCP
+        - containerPort: 8000
           protocol: TCP
         - containerPort: 8443
           protocol: TCP
