@@ -10,7 +10,6 @@ metadata:
     app.kubernetes.io/name: myapp
     app.kubernetes.io/part-of: myapp-app
   name: myapp
-  namespace: atest
 spec:
   internalTrafficPolicy: Cluster
   ipFamilies:

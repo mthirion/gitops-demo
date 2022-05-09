@@ -15,7 +15,6 @@ metadata:
     app.openshift.io/runtime-namespace: atest
     app.openshift.io/runtime-version: "1.0"
   name: myapp
-  namespace: atest
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -38,7 +37,7 @@ spec:
         deploymentconfig: myapp
     spec:
       containers:
-      - image: image-registry.openshift-image-registry.svc:5000/atest/myapp@sha256:4d75803ea2987bafc8d2a75883add86bcabcbde488783a8c0f55b8f3c6745b64
+      - image: myapp:latest
         imagePullPolicy: IfNotPresent
         name: myapp
         ports:
