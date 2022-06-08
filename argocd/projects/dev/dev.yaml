@@ -3,12 +3,11 @@ kind: Project
 metadata:
   annotations:
     openshift.io/description: ""
-    openshift.io/display-name: dev
-    openshift.io/requester: kubeadmin
+    openshift.io/display-name: development
   labels:
-    kubernetes.io/metadata.name: dev
+    kubernetes.io/metadata.name: development
     openshift-pipelines.tekton.dev/namespace-reconcile-version: v1.5
-  name: dev
+  name: development
 spec:
   finalizers:
   - kubernetes
