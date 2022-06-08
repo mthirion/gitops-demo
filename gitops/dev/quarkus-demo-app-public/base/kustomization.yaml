@@ -2,5 +2,4 @@ resources:
 - BuildConfig-myquarkus.json
 - DeploymentConfig-myquarkus.json
 - ImageStream-myquarkus.json
-- ImageStream-openjdk-11.json
 - Service-myquarkus.json
