@@ -2,5 +2,4 @@ resources:
 - BuildConfig-as-rest-server2.json
 - DeploymentConfig-as-rest-server2.json
 - ImageStream-as-rest-server2.json
-- ImageStream-openjdk-11.json
 - Service-as-rest-server2.json
