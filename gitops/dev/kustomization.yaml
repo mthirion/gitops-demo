@@ -1,4 +1,4 @@
 resources:
 - ./as-rest-server2/overlays/
-- quarkus-demo-app-public/overlays
+- ./quarkus-demo-app-public/overlays
 - ./builders/ImageStream-openjdk-11.json
