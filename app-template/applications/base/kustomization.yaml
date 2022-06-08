@@ -1,0 +1,8 @@
+resources:
+- myquarkus-dc.yaml
+- myquarkus-svc.yaml
+
+configMapGenerator:
+- name: myquarkus-configmap
+  files:
+  - ../overlays/application.properties  

@@ -1,0 +1,22 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    openshift.io/host.generated: "true"
+  labels:
+    app: myapp
+    app.kubernetes.io/component: myapp
+    app.kubernetes.io/instance: myapp
+    app.kubernetes.io/name: myapp
+    app.kubernetes.io/part-of: myapp-app
+  name: myapp
+  namespace: atest
+spec:
+  host: myapp-atest.apps-crc.testing
+  port:
+    targetPort: 8080-tcp
+  to:
+    kind: Service
+    name: myapp
+    weight: 100
+  wildcardPolicy: None
