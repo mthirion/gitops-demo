@@ -1,0 +1,6 @@
+resources:
+- base/BuildConfig-as-rest-server2.json
+- base/DeploymentConfig-as-rest-server2.json
+- base/ImageStream-as-rest-server2.json
+- base/ImageStream-openjdk-11.json
+- base/Service-as-rest-server2.json
