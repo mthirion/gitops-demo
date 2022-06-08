@@ -1,2 +1,2 @@
 resources:
-- as-rest-server2/overlays
+- ./as-rest-server2/overlays/
