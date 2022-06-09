@@ -1,2 +1,13 @@
 bases:
 - ../base
+
+configMapGenerator:
+- name: REPLACE_ME
+  files:
+  - application.properties
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    type: quarkus-app-properties
+  annotations:
+    generated-by: kustomization
