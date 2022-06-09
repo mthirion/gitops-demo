@@ -1,0 +1,8 @@
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+LABEL name="ubi8-minimal-jq"
+LABEL summary="The minimal Red Hat Universal Base Image 8 with jq utility."
+LABEL io.k8s.display-name="Red Hat Universal Base Image 8 Minimal With jq Json Utility"
+RUN microdnf -y install jq && microdnf -y clean all  && rm -rf /var/cache
+CMD ["/bin/bash"]
+
+#buildah bud -t jq:latest ./Dockerfile-jq

@@ -1,0 +1,134 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/categories: Git
+    tekton.dev/displayName: git cli
+    tekton.dev/pipelines.minVersion: 0.21.0
+    tekton.dev/platforms: linux/amd64,linux/s390x,linux/ppc64le
+    tekton.dev/tags: git
+  labels:
+    app.kubernetes.io/version: "0.3"
+    operator.tekton.dev/provider-type: community
+  name: git-push-argocd
+spec:
+  description: This task derives from git-cli. It can be used to perform git operations.
+    It is used to perform git push with the purpose of triggering ArgoCD
+  params:
+  - default: docker.io/alpine/git:v2.26.2@sha256:23618034b0be9205d9cc0846eb711b12ba4c9b468efdd8a59aac1d7b1a23363f
+    description: |
+      The base image for the task.
+    name: BASE_IMAGE
+    type: string
+  - default: development
+    description: |
+      Target environment
+    name: ARGOCD_ENV
+    type: string
+  - description: Application name
+    name: appname
+    type: string
+  - default: pipeline
+    description: |
+      Git user name for git config
+    name: GIT_USER_NAME
+    type: string
+  - default: pipeline@dummy.com
+    description: |
+      Git user email for performing git operation.
+    name: GIT_USER_EMAIL
+    type: string
+  - default: /root
+    description: |
+      Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user or have overridden
+      the gitInitImage param with an image containing custom user configuration.
+    name: USER_HOME
+    type: string
+  - default: "true"
+    description: Log the commands that are executed during `git-clone`'s operation.
+    name: VERBOSE
+    type: string
+  steps:
+  - env:
+    - name: PARAM_VERBOSE
+      value: $(params.VERBOSE)
+    - name: PARAM_USER_HOME
+      value: $(params.USER_HOME)
+    - name: GIT_USER_NAME
+      value: $(params.GIT_USER_NAME)
+    - name: WORKSPACE_SSH_DIRECTORY_BOUND
+      value: $(workspaces.ssh-directory.bound)
+    - name: WORKSPACE_SSH_DIRECTORY_PATH
+      value: $(workspaces.ssh-directory.path)
+    - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
+      value: $(workspaces.basic-auth.bound)
+    - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
+      value: $(workspaces.basic-auth.path)
+    - name: SOURCE_DIR
+      value: $(workspaces.source.path)
+    - name: GIT_URL_SECRET
+      value: $(workspaces.git-url-secret.path)
+    - name: ARGOCD_ENV
+      value: $(params.ARGOCD_ENV)
+    image: $(params.BASE_IMAGE)
+    name: git
+    resources: {}
+    script: "#!/usr/bin/env sh\nset -eu\n\nif [ \"${PARAM_VERBOSE}\" = \"true\" ]
+      ; then\n  set -x\nfi\n\nif [ \"${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}\" = \"true\"
+      ] ; then\n  cp \"${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials\" \"${PARAM_USER_HOME}/.git-credentials\"\n
+      \ cp \"${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig\" \"${PARAM_USER_HOME}/.gitconfig\"\n
+      \ chmod 400 \"${PARAM_USER_HOME}/.git-credentials\"\n  chmod 400 \"${PARAM_USER_HOME}/.gitconfig\"\nfi\n\nif
+      [ \"${WORKSPACE_SSH_DIRECTORY_BOUND}\" = \"true\" ] ; then\n  cp -R \"${WORKSPACE_SSH_DIRECTORY_PATH}\"
+      \"${PARAM_USER_HOME}\"/.ssh\n  chmod 700 \"${PARAM_USER_HOME}\"/.ssh\n  chmod
+      -R 400 \"${PARAM_USER_HOME}\"/.ssh/*\nfi\n\n# BEGIN SCRIPT LOGIC # ------------------
+      \nmkdir -p /tmp/kubernetes   \nrm -rf /tmp/kubernetes/* \ncd /tmp/kubernetes\n#
+      get the gitops repo          \ngitops_url=`cat ${GIT_URL_SECRET}/*`\ngit clone
+      $gitops_url\ndir_name=`echo ${gitops_url##*/} ` \ncd $dir_name \n# ensure the
+      structure exists for this app \ntarget_env=`echo ${ARGOCD_ENV} | tr '[:upper:]'
+      '[:lower:]' ` \ncd gitops/$target_env\nif [[ ! -d ./$(params.appname) ]] \nthen\n\n
+      \ cp -r ../../templates/application $(params.appname)\n\nfi\n# add files to
+      gitops for target env, avoiding BC in case of Dev \necho \"processing deployment
+      files...\" \ncd $(params.appname) \ncp -rf ${SOURCE_DIR}/target/jq-generated/*.json
+      base \n\n# adjust artifact eligibility \nif [[ $target_env != \"dev\" ]] \nthen\n
+      \ rm base/BuildConfig*\nfi\n# auto-create configMap\ncat overlays/kustomization.yaml
+      | sed 's/REPLACE_ME/$(params.appname)/' > /tmp/kustomization.yaml\nmv -f /tmp/kustomization.yaml
+      overlays\n# Avoid conflicts with common builders\nmkdir -p ../builders\nmv -f
+      base/ImageStream*openjdk* ../builders\n# Update kustomization files for app
+      \necho \"updating Kustomize...\" \necho \"resources:\" > base/kustomization.yaml
+      \ncd base\nfor f in `ls *.json`\ndo\n  echo \"- $f\" >> kustomization.yaml\ndone
+      \nfor f in `ls *.yaml | grep -v kustomization` \ndo\n  echo \"- $f\" >> kustomization.yaml\ndone
+      \n# return to gitops/dev/appName\ncd -\n# Update kustomization files for env
+      (including builders)\nif [[ -z `cat ../kustomization.yaml | grep $(params.appname)
+      ` ]] \nthen\n  echo \"- ./$(params.appname)/overlays\" >> ../kustomization.yaml\nfi\ncd
+      ..\n# being in gitops/dev\nfor is in `ls builders/ImageStream*`; do\n\n  if
+      [[ -z `cat ./kustomization.yaml | grep $is` ]] \n\n  then\n    echo \"- ./$is\"
+      >> ./kustomization.yaml\n  fi\n\ndone\n# returning to gitops/dev/appName\ncd
+      -\n# Setting up the config for the git.\ngit config --global user.email \"$(params.GIT_USER_EMAIL)\"\ngit
+      config --global user.name \"$(params.GIT_USER_NAME)\"\n\n# push changes to gitops
+      repo \necho \"pushing changes to gitops repository...\" \nnow=`date` \ngit add
+      /tmp/kubernetes/$dir_name --all \ngit commit -m \"pipeline => release of $(params.appname)
+      on $now to $target_env\" \ngit remote remove origin\ngit remote add origin `cat
+      ${GIT_URL_SECRET}/*`\ngit push origin master\necho \"done\"\n"
+    workingDir: $(workspaces.source.path)
+  workspaces:
+  - description: A workspace that will contains the fetched argocd git repository.
+    name: source
+  - description: A workspace that contains the GIT ArgoCD url with the user's token
+      It's expected to be mounted as a secret containing a file with a single line
+      url=...
+    name: git-url-secret
+  - description: |
+      A .ssh directory with private key, known_hosts, config, etc. Copied to
+      the user's home before git commands are executed. Used to authenticate
+      with the git remote when performing the clone. Binding a Secret to this
+      Workspace is strongly recommended over other volume types.
+    name: ssh-directory
+    optional: true
+  - description: |
+      A Workspace containing a .gitconfig and .git-credentials file. These
+      will be copied to the user's home before any git commands are run. Any
+      other files in this Workspace are ignored. It is strongly recommended
+      to use ssh-directory over basic-auth whenever possible and to bind a
+      Secret to this Workspace over other volume types.
+    name: basic-auth
+    optional: true

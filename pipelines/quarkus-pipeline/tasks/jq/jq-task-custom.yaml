@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"tekton.dev/v1beta1","kind":"Task","metadata":{"annotations":{"tekton.dev/categories":"Build Tools","tekton.dev/pipelines.minVersion":"0.12.1","tekton.dev/platforms":"linux/amd64,linux/s390x,linux/ppc64le","tekton.dev/tags":"build-tool"},"labels":{"app.kubernetes.io/version":"0.2","operator.tekton.dev/provider-type":"community"},"name":"jq","namespace":"pipelines"},"spec":{"description":"This Task can be used to execute scripts that requires jq to manipulate json objects","params":[{"default":"image-registry.openshift-image-registry.svc:5000/pipelines/jq@sha256:3bb0e5fa8e9dd992c913d1b4f7506fe6a70ec120a97b0188c4f4957c04b3ce7e","description":"JQ image","name":"JQ_IMAGE","type":"string"},{"default":"","description":"optional script arguments","name":"JQ_SCRIPT_ARGS","type":"string"}],"steps":[{"args":["$(params.JQ_SCRIPT_ARGS)"],"command":["/usr/bin/sh $(workspaces.script-file.path)/*.sh $(workspaces.sources.path)"],"image":"$(params.JQ_IMAGE)","name":"jq-exec-sh","resources":{},"workingDir":"/tmp"}],"workspaces":[{"description":"The workspace consisting of the script to execute (should be mounted as a configmap).","name":"script-file"},{"description":"The workspace with the source code (will look for $/target/kubernetes/openshift.json)","name":"sources"}]}}
+    tekton.dev/categories: Build Tools
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/platforms: linux/amd64,linux/s390x,linux/ppc64le
+    tekton.dev/tags: build-tool
+  labels:
+    app.kubernetes.io/version: "0.2"
+    operator.tekton.dev/provider-type: community
+  name: jq
+spec:
+  description: This Task can be used to execute scripts that requires jq to manipulate
+    json objects
+  params:
+  - default: image-registry.openshift-image-registry.svc:5000/pipelines/jq@sha256:3bb0e5fa8e9dd992c913d1b4f7506fe6a70ec120a97b0188c4f4957c04b3ce7e
+    description: JQ image
+    name: JQ_IMAGE
+    type: string
+  steps:
+  - env:
+    - name: JQ_SOURCE_DIR
+      value: $(workspaces.sources.path)
+    image: $(params.JQ_IMAGE)
+    name: jq-exec-sh
+    resources: {}
+    script: f=`ls $(workspaces.script-file.path)` ; sh $(workspaces.script-file.path)/$f
+      ; cp -r $JQ_SOURCE_DIR/src/main/resources/application.properties $JQ_SOURCE_DIR/target/jq-generated
+    workingDir: /tmp
+  workspaces:
+  - description: The workspace consisting of the script to execute (should be mounted
+      as a configmap).
+    name: script-file
+  - description: The workspace with the source code (will look for $/target/kubernetes/openshift.json)
+    name: sources

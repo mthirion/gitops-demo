@@ -1,0 +1,13 @@
+resources:
+- quarkus-pipeline.yaml
+- tasks/buildah/buildah-task-custom.yaml
+- tasks/git-push-argocd.yaml
+- tasks/jq/jq-task-custom.yaml
+- tasks/maven-task-custom.yaml
+- trigger/github-push-custom-triggerbinding.yml
+- trigger/github-push-eventlistener.yaml
+- trigger/github-push-triggertemplate.yaml
+- workspaces/git-secret.yaml
+- workspaces/jq-cm.yaml
+- workspaces/maven-pvc.yaml
+- workspaces/pipeline-pvc.yaml

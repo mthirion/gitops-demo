@@ -1,0 +1,17 @@
+apiVersion: v1
+data:
+  quarkus-extract-k8s.sh: "\n#K8_SRC_FILE=/development/workspace/internal/integration/quarkus/quarkus2-rest-server/target/kubernetes/openshift.json\n\nJQ_K8_SRC_HOME=$JQ_SOURCE_DIR/target/kubernetes/openshift.json\nJQ_TARGET_DIR=$JQ_SOURCE_DIR/target/jq-generated\n\nif
+    [[ ! -f $JQ_K8_SRC_HOME ]]\nthen\n\techo \"Cannot find openshift.json as $JQ_K8_SRC_HOME\"\n\texit
+    1\nfi\n\nmkdir -p $JQ_TARGET_DIR\nrm -rf $JQ_TARGET_DIR/*.yaml\ncat $JQ_K8_SRC_HOME
+    | jq -n -c inputs | while read -r line\ndo \n\techo $line; echo \"\" ; echo \"\"
+    \ \n\t\n\t# Generate file name\n\tname=`echo $line | jq '.metadata.name'| sed
+    's/\"//g' `\n\tkind=`echo $line | jq '.kind' | sed 's/\"//g' `\n\techo $line >
+    $JQ_TARGET_DIR/$kind-$name.json\ndone\n\necho \"generated\"\nls $JQ_TARGET_DIR\n\nexit
+    0\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2022-06-07T18:02:55Z"
+  name: jq-script
+  namespace: pipelines
+  resourceVersion: "556705"
+  uid: 2c4d4ae5-51fa-43ad-bb46-dfc8b6197d3f

@@ -1,0 +1,126 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: quarkus-pipeline
+spec:
+  params:
+  - name: appname
+    type: string
+  - name: url
+    type: string
+  tasks:
+  - name: git-clone
+    params:
+    - name: url
+      value: $(params.url)
+    - name: submodules
+      value: "true"
+    - name: depth
+      value: "1"
+    - name: sslVerify
+      value: "true"
+    - name: deleteExisting
+      value: "true"
+    - name: verbose
+      value: "true"
+    - name: gitInitImage
+      value: registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:fbf1c4df0f6c1330b34a0ea882ca1dff0e224f3a7060772532a2244438b91074
+    - name: userHome
+      value: /tekton/home
+    taskRef:
+      kind: ClusterTask
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: source-code
+  - name: maven-cache
+    params:
+    - name: MAVEN_IMAGE
+      value: gcr.io/cloud-builders/mvn@sha256:57523fc43394d6d9d2414ee8d1c85ed7a13460cbb268c3cd16d28cfb3859e641
+    - name: GOALS
+      value: package
+    - name: PROXY_PROTOCOL
+      value: http
+    - name: CONTEXT_DIR
+      value: .
+    runAfter:
+    - git-clone
+    taskRef:
+      kind: Task
+      name: maven-cache
+    workspaces:
+    - name: source
+      workspace: source-code
+    - name: maven-settings
+      workspace: source-code
+    - name: maven-cache
+      workspace: maven-cache
+  - name: buildah-crossenv
+    params:
+    - name: BUILDER_IMAGE
+      value: registry.redhat.io/rhel8/buildah@sha256:e19cf23d5f1e0608f5a897f0a50448beb9f8387031cca49c7487ec71bd91c4d3
+    - name: STORAGE_DRIVER
+      value: vfs
+    - name: appname
+      value: $(params.appname)
+    - name: APP_VERSION
+      value: latest
+    - name: DOCKERFILE
+      value: ./Dockerfile
+    - name: TARGET_ENV
+      value: development
+    - name: CONTEXT
+      value: .
+    - name: TLSVERIFY
+      value: "true"
+    - name: FORMAT
+      value: oci
+    runAfter:
+    - maven-cache
+    taskRef:
+      kind: Task
+      name: buildah-crossenv
+    workspaces:
+    - name: source
+      workspace: source-code
+  - name: jq
+    params:
+    - name: JQ_IMAGE
+      value: image-registry.openshift-image-registry.svc:5000/pipelines/jq@sha256:3bb0e5fa8e9dd992c913d1b4f7506fe6a70ec120a97b0188c4f4957c04b3ce7e
+    runAfter:
+    - buildah-crossenv
+    taskRef:
+      kind: Task
+      name: jq
+    workspaces:
+    - name: script-file
+      workspace: script-dir
+    - name: sources
+      workspace: source-code
+  - name: git-push-argocd
+    params:
+    - name: BASE_IMAGE
+      value: docker.io/alpine/git:v2.26.2@sha256:23618034b0be9205d9cc0846eb711b12ba4c9b468efdd8a59aac1d7b1a23363f
+    - name: ARGOCD_ENV
+      value: dev
+    - name: appname
+      value: $(params.appname)
+    - name: USER_HOME
+      value: /root
+    - name: VERBOSE
+      value: "true"
+    runAfter:
+    - jq
+    taskRef:
+      kind: Task
+      name: git-push-argocd
+    workspaces:
+    - name: source
+      workspace: source-code
+    - name: git-url-secret
+      workspace: git-url-secret
+  workspaces:
+  - name: source-code
+  - name: maven-cache
+  - name: script-dir
+  - name: git-url-secret
