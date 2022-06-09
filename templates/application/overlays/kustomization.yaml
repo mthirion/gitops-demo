@@ -5,7 +5,7 @@ bases:
 configMapGenerator:
 - name: REPLACE_ME
   files:
-  - ../config/application.properties
+  - application.properties
 generatorOptions:
   disableNameSuffixHash: true
   labels:
