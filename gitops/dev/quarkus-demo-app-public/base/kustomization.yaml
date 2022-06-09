@@ -1,5 +1,9 @@
 resources:
 - BuildConfig-myquarkus.json
+- BuildConfig-quarkus-demo-app-public.json
 - DeploymentConfig-myquarkus.json
+- DeploymentConfig-quarkus-demo-app-public.json
 - ImageStream-myquarkus.json
+- ImageStream-quarkus-demo-app-public.json
 - Service-myquarkus.json
+- Service-quarkus-demo-app-public.json
