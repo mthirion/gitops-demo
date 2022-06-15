@@ -18,14 +18,23 @@ It corresponds to one ArgoCD Application that will synchronize the entire conten
 With that structure, a quick look at the repository / argocd Application in the UI tells about which applications have been deployed in which environment and when.
 
 Example:
+
   gitops
+  
     |--> development
+    
         |--> application1
+        
         |--> application2
+        
         |--> application3
+        
     |--> integration
+    
         |--> application1
+        
         |--> application2
+        
 
 ## application example
 The "pipelines" directory contains the files needed to create a tekton pipeline that will build & deploy the application store in:
