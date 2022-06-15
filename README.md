@@ -99,12 +99,11 @@ The maven task uses an extra PVC to cache downloaded maven artefacts: <br/>
 oc apply -f pipelines/quarkus-pipeline/workspaces/maven-pvc.yaml
 
 ### Triggers
-Create the artefact <br/>     
+Create the artefacts:      
 oc apply -f pipelines/quarkus-pipeline/trigger/github-push-custom-triggerbinding.yml <br/>
 oc apply -f pipelines/quarkus-pipeline/trigger/github-push-triggertemplate.yaml <br/>
 oc apply -f pipelines/quarkus-pipeline/trigger/github-push-eventlistener.yaml <br/>
      
 Then create the github webhook that points to the Openshift Route created by the EventListener.
-     
      
      
