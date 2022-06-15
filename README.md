@@ -19,21 +19,21 @@ With that structure, a quick look at the repository / argocd Application in the 
 
 Example:
 
-  gitops
-  
-    |--> development
+     gitops
+       |
+       |- development
     
-        |--> application1
+            |- application1
         
-        |--> application2
+            |- application2
         
-        |--> application3
+            |- application3
         
-    |--> integration
+       |- integration
     
-        |--> application1
+            |- application1
         
-        |--> application2
+            |- application2
         
 
 ## application example
