@@ -26,3 +26,14 @@ Example:
     |--> integration
         |--> application1
         |--> application2
+
+## application example
+The "pipelines" directory contains the files needed to create a tekton pipeline that will build & deploy the application store in:
+https://github.com/mthirion/quarkus-demo-app-public
+
+The pipeline has the following elements:
+- clone the git repository (there are also a Trigger, TriggerBindings and EventListener to launch the pipeline automatically on push events)
+- build the code using "mvn package"
+- build the image using buildah, relying on the Dockerfile present within the application repository
+- uses 'jq' utility to manipulate the openshift objects stored in target/kubernetes/openshift.json (and generated automatically by "mvn package" thanks to the Quarkus Openshift plugin)
+- pushes the json objects related to the deployment to this gitops repository, using the content of the 'templates' directory as a template.
