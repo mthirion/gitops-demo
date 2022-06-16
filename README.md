@@ -50,12 +50,12 @@ The pipeline has the following elements:<br/>
 ## running the demo
 
 ### architecture
-![CI/CD pipeline](https://github.com/mthirion/gitops-demo/gitops-demo.png)
+![CI/CD pipeline](https://github.com/mthirion/gitops-demo/blob/master/gitops-demo.png)
 
 ### prerequisites
 - Openshift / CodeReady container (Openshift Local) --version 4.8
 - Openshift gitops installed with the operator (thus, argocd running in openshift-gitops namespace)
-- A pre-existing pipelines namespace
+- A pre-existing "pipelines" namespace
 - Pre-existing "development" and "integration" namespace
 
 ### preparation
@@ -68,8 +68,8 @@ The pipeline has the following elements:<br/>
 create the pipeline tasks: <br/>
 - oc apply -f pipelines/quarkus-pipeline/tasks/maven-task-custom.yaml 
 - oc apply -f pipelines/quarkus-pipeline/tasks/git-push-argocd.yaml
-- oc apply -f pipelines/quarkus-pipeline/tasks/buildah/buildah-task-custom.yaml
-- oc apply -f pipelines/quarkus-pipeline/tasks/buildah/jq/jq-task-custom.yaml 
+- oc apply -f pipelines/quarkus-pipeline/tasks/buildah-task-custom.yaml
+- oc apply -f pipelines/quarkus-pipeline/tasks/jq/jq-task-custom.yaml 
 
 ### tasks configuration
 - buildah <br/>
@@ -79,7 +79,7 @@ oc adm policy add-role-to-user registry-editor system:serviceaccount:pipelines:p
 
 - jq <br/>
 The image used by the jq task (containing the 'jq' utility) can be built with the dockerfile: <br/>
-buildah bud -t jq:latest pipelines/quarkus-pipeline/tasks/jq/Dockerfile-jq/Dockerfile-jq
+buildah bud -t jq:latest pipelines/quarkus-pipeline/tasks/jq/Dockerfile-jq
 
 The jq tasks executes the script pipelines/quarkus-pipeline/tasks/jq/quarkus-extract-k8s.sh <br/>
 This script is injected into the task as a ConfigMap <br/>
