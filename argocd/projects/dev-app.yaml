@@ -18,7 +18,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-    - PrunePropagationPolicy=foreground
-    - ApplyOutOfSyncOnly=true
-    - PruneLast=true

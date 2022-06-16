@@ -89,17 +89,18 @@ spec:
       \ cp -r ../../templates/application $(params.appname)\n\nfi\n# add files to
       gitops for target env, avoiding BC in case of Dev \necho \"processing deployment
       files...\" \ncd $(params.appname) \ncp -rf ${SOURCE_DIR}/target/jq-generated/*.json
-      base \n\n# adjust artifact eligibility \nif [[ $target_env != \"dev\" ]] \nthen\n
-      \ rm base/BuildConfig*\nfi\n# auto-create configMap\ncat overlays/kustomization.yaml
-      | sed 's/REPLACE_ME/$(params.appname)/' > /tmp/kustomization.yaml\nmv -f /tmp/kustomization.yaml
-      overlays\n# Avoid conflicts with common builders\nmkdir -p ../builders\nmv -f
-      base/ImageStream*openjdk* ../builders\n# Update kustomization files for app
-      \necho \"updating Kustomize...\" \necho \"resources:\" > base/kustomization.yaml
-      \ncd base\nfor f in `ls *.json`\ndo\n  echo \"- $f\" >> kustomization.yaml\ndone
-      \nfor f in `ls *.yaml | grep -v kustomization` \ndo\n  echo \"- $f\" >> kustomization.yaml\ndone
-      \n# return to gitops/dev/appName\ncd -\n# Update kustomization files for env
-      (including builders)\nif [[ -z `cat ../kustomization.yaml | grep $(params.appname)
-      ` ]] \nthen\n  echo \"- ./$(params.appname)/overlays\" >> ../kustomization.yaml\nfi\ncd
+      base \ncp -f ${SOURCE_DIR}/target/jq-generated/application.properties overlays\n\n#
+      adjust artifact eligibility \nif [[ $target_env != \"dev\" ]] \nthen\n  rm base/BuildConfig*\nfi\n#
+      auto-create configMap\ncat overlays/kustomization.yaml | sed 's/REPLACE_ME/$(params.appname)/'
+      > /tmp/kustomization.yaml\nmv -f /tmp/kustomization.yaml overlays\n# Avoid conflicts
+      with common builders\nmkdir -p ../builders\nmv -f base/ImageStream*openjdk*
+      ../builders\n# Update kustomization files for app \necho \"updating Kustomize...\"
+      \necho \"resources:\" > base/kustomization.yaml \ncd base\nfor f in `ls *.json`\ndo\n
+      \ echo \"- $f\" >> kustomization.yaml\ndone \nfor f in `ls *.yaml | grep -v
+      kustomization` \ndo\n  echo \"- $f\" >> kustomization.yaml\ndone \n# return
+      to gitops/dev/appName\ncd -\n# Update kustomization files for env (including
+      builders)\nif [[ -z `cat ../kustomization.yaml | grep $(params.appname) ` ]]
+      \nthen\n  echo \"- ./$(params.appname)/overlays\" >> ../kustomization.yaml\nfi\ncd
       ..\n# being in gitops/dev\nfor is in `ls builders/ImageStream*`; do\n\n  if
       [[ -z `cat ./kustomization.yaml | grep $is` ]] \n\n  then\n    echo \"- ./$is\"
       >> ./kustomization.yaml\n  fi\n\ndone\n# returning to gitops/dev/appName\ncd

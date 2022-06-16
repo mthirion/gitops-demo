@@ -49,6 +49,9 @@ The pipeline has the following elements:<br/>
 
 ## running the demo
 
+### architecture
+![CI/CD pipeline](https://github.com/mthirion/gitops-demo/gitops-demo.png)
+
 ### prerequisites
 - Openshift / CodeReady container (Openshift Local) --version 4.8
 - Openshift gitops installed with the operator (thus, argocd running in openshift-gitops namespace)
