@@ -1,7 +1,8 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: quarkus-pipeline
+  name: quarkus-buildeploy-pipeline
+  namespace: pipelines
 spec:
   params:
   - name: appname
@@ -97,14 +98,16 @@ spec:
       workspace: script-dir
     - name: sources
       workspace: source-code
-  - name: git-push-argocd
+  - name: deploy-argocd-dev
     params:
     - name: BASE_IMAGE
       value: docker.io/alpine/git:v2.26.2@sha256:23618034b0be9205d9cc0846eb711b12ba4c9b468efdd8a59aac1d7b1a23363f
-    - name: ARGOCD_ENV
-      value: dev
     - name: appname
       value: $(params.appname)
+    - name: GIT_USER_NAME
+      value: pipeline
+    - name: GIT_USER_EMAIL
+      value: pipeline@dummy.com
     - name: USER_HOME
       value: /root
     - name: VERBOSE
@@ -113,7 +116,7 @@ spec:
     - jq
     taskRef:
       kind: Task
-      name: git-push-argocd
+      name: deploy-argocd-dev
     workspaces:
     - name: source
       workspace: source-code

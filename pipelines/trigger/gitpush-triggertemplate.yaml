@@ -4,7 +4,7 @@ metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"triggers.tekton.dev/v1alpha1","kind":"TriggerTemplate","metadata":{"annotations":{},"name":"quarkus-triggertemplate","namespace":"pipelines"},"spec":{"params":[{"description":"The git repository url","name":"git-repo-url"},{"default":"pipelines-1.5","description":"The git revision","name":"git-revision"},{"description":"The name of the deployment to be created / patched","name":"git-repo-name"},{"description":"The reference (tag/branch) where the action was performed","name":"git-ref"}],"resourcetemplates":[{"apiVersion":"tekton.dev/v1beta1","kind":"PipelineRun","metadata":{"name":"quakus-pipelinerun-$(tt.params.git-repo-name)"},"spec":{"params":[{"name":"url","value":"$(tt.params.git-repo-url)"}],"pipelineRef":{"name":"quarkus-pipeline"},"serviceAccountName":"pipeline","workspaces":[{"name":"source-code","persistentVolumeClaim":{"claimName":"pipeline-code-workspace"}}]}}]}}
-  name: quarkus-triggertemplate
+  name: quarkus-buildeploy-triggertemplate
 spec:
   params:
   - description: The git repository url
@@ -23,7 +23,7 @@ spec:
       - name: appname
         value: $(tt.params.git-repo-name)
       pipelineRef:
-        name: quarkus-pipeline
+        name: quarkus-buildeploy-pipeline
       serviceAccountName: pipeline
       workspaces:
       - name: source-code

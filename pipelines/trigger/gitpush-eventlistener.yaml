@@ -1,0 +1,21 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"triggers.tekton.dev/v1alpha1","kind":"EventListener","metadata":{"annotations":{},"name":"quarkus-eventlistener","namespace":"pipelines"},"spec":{"serviceAccountName":"pipeline","triggers":[{"triggerRef":"quarkus-trigger"}]}}
+  finalizers:
+  - eventlisteners.triggers.tekton.dev
+  name: quarkus-eventlistener
+  namespace: pipelines
+spec:
+  namespaceSelector: {}
+  resources: {}
+  serviceAccountName: pipeline
+  triggers:
+  - bindings:
+    - kind: TriggerBinding
+      ref: gitpush-binding
+    name: qtrigger
+    template:
+      ref: quarkus-buildeploy-triggertemplate

@@ -10,7 +10,8 @@ metadata:
   labels:
     app.kubernetes.io/version: "0.3"
     operator.tekton.dev/provider-type: community
-  name: git-push-argocd
+  name: deploy-argocd-dev
+  namespace: pipelines
 spec:
   description: This task derives from git-cli. It can be used to perform git operations.
     It is used to perform git push with the purpose of triggering ArgoCD
@@ -19,11 +20,6 @@ spec:
     description: |
       The base image for the task.
     name: BASE_IMAGE
-    type: string
-  - default: development
-    description: |
-      Target environment
-    name: ARGOCD_ENV
     type: string
   - description: Application name
     name: appname
@@ -68,8 +64,6 @@ spec:
       value: $(workspaces.source.path)
     - name: GIT_URL_SECRET
       value: $(workspaces.git-url-secret.path)
-    - name: ARGOCD_ENV
-      value: $(params.ARGOCD_ENV)
     image: $(params.BASE_IMAGE)
     name: git
     resources: {}
@@ -84,16 +78,12 @@ spec:
       \nmkdir -p /tmp/kubernetes   \nrm -rf /tmp/kubernetes/* \ncd /tmp/kubernetes\n#
       get the gitops repo          \ngitops_url=`cat ${GIT_URL_SECRET}/*`\ngit clone
       $gitops_url\ndir_name=`echo ${gitops_url##*/} ` \ncd $dir_name \n# ensure the
-      structure exists for this app \ntarget_env=`echo ${ARGOCD_ENV} | tr '[:upper:]'
-      '[:lower:]' ` \ncd gitops/$target_env\nif [[ ! -d ./$(params.appname) ]] \nthen\n\n
-      \ cp -r ../../templates/application $(params.appname)\n\nfi\n# add files to
-      gitops for target env, avoiding BC in case of Dev \necho \"processing deployment
-      files...\" \ncd $(params.appname) \ncp -rf ${SOURCE_DIR}/target/jq-generated/*.json
+      structure exists for this app \ncd gitops/dev\nif [[ ! -d ./$(params.appname)
+      ]] \nthen\n\n  cp -r ../../templates/application $(params.appname)\n\nfi\n#
+      add files to gitops for target env, avoiding BC in case of Dev \necho \"processing
+      deployment files...\" \ncd $(params.appname) \ncp -rf ${SOURCE_DIR}/target/jq-generated/*.json
       base \ncp -f ${SOURCE_DIR}/target/jq-generated/application.properties overlays\n\n#
-      adjust artifact eligibility \nif [[ $target_env != \"dev\" ]] \nthen\n  rm base/BuildConfig*\nfi\n#
-      auto-create configMap\ncat overlays/kustomization.yaml | sed 's/REPLACE_ME/$(params.appname)/'
-      > /tmp/kustomization.yaml\nmv -f /tmp/kustomization.yaml overlays\n# Avoid conflicts
-      with common builders\nmkdir -p ../builders\nmv -f base/ImageStream*openjdk*
+      Avoid conflicts with common builders\nmkdir -p ../builders\nmv -f base/ImageStream*openjdk*
       ../builders\n# Update kustomization files for app \necho \"updating Kustomize...\"
       \necho \"resources:\" > base/kustomization.yaml \ncd base\nfor f in `ls *.json`\ndo\n
       \ echo \"- $f\" >> kustomization.yaml\ndone \nfor f in `ls *.yaml | grep -v
@@ -107,9 +97,9 @@ spec:
       -\n# Setting up the config for the git.\ngit config --global user.email \"$(params.GIT_USER_EMAIL)\"\ngit
       config --global user.name \"$(params.GIT_USER_NAME)\"\n\n# push changes to gitops
       repo \necho \"pushing changes to gitops repository...\" \nnow=`date` \ngit add
-      /tmp/kubernetes/$dir_name --all \ngit commit -m \"pipeline => release of $(params.appname)
-      on $now to $target_env\" \ngit remote remove origin\ngit remote add origin `cat
-      ${GIT_URL_SECRET}/*`\ngit push origin master\necho \"done\"\n"
+      /tmp/kubernetes/$dir_name/gitops/dev --all \ngit commit -m \"pipeline => release
+      of $(params.appname) on $now to development\" \ngit remote remove origin\ngit
+      remote add origin `cat ${GIT_URL_SECRET}/*`\ngit push origin master\necho \"done\"\n"
     workingDir: $(workspaces.source.path)
   workspaces:
   - description: A workspace that will contains the fetched argocd git repository.

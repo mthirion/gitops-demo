@@ -1,0 +1,46 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: promote2integration
+  namespace: pipelines
+spec:
+  params:
+  - name: appname
+    type: string
+  tasks:
+  - name: openshift-client-1-6-0
+    params:
+    - name: SCRIPT
+      value: oc tag development/$(params.appname):latest integration/$(params.appname):latest
+    - name: VERSION
+      value: latest
+    taskRef:
+      kind: ClusterTask
+      name: openshift-client-1-6-0
+  - name: deploy-argocd-int
+    params:
+    - name: BASE_IMAGE
+      value: docker.io/alpine/git:v2.26.2@sha256:23618034b0be9205d9cc0846eb711b12ba4c9b468efdd8a59aac1d7b1a23363f
+    - name: appname
+      value: $(params.appname)
+    - name: GIT_USER_NAME
+      value: pipeline
+    - name: GIT_USER_EMAIL
+      value: pipeline@dummy.com
+    - name: USER_HOME
+      value: /root
+    - name: VERBOSE
+      value: "true"
+    runAfter:
+    - openshift-client-1-6-0
+    taskRef:
+      kind: Task
+      name: deploy-argocd-int
+    workspaces:
+    - name: source
+      workspace: source-code
+    - name: git-url-secret
+      workspace: git-url-secret
+  workspaces:
+  - name: source-code
+  - name: git-url-secret
