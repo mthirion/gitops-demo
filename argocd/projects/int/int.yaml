@@ -1,0 +1,13 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  annotations:
+    openshift.io/description: ""
+    openshift.io/display-name: integration
+  labels:
+    kubernetes.io/metadata.name: integration
+    openshift-pipelines.tekton.dev/namespace-reconcile-version: v1.5
+  name: integration
+spec:
+  finalizers:
+  - kubernetes
