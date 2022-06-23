@@ -1,0 +1,13 @@
+FROM registry.access.redhat.com/ubi8/openjdk-11:1.13-1.1655306377
+LABEL name="ubi8-openjk-gatling"
+LABEL summary="The Red Hat openjdk 11 image (on minimal Red Hat Universal Base Image 8) with gatling utility."
+LABEL io.k8s.display-name="Red Hat Openjdk 11 Image (on Universal Base Image 8 Minimal) With Gatling Utility"
+ENV  GATLING_HOME=/opt/gatling
+ENV  GATLING_VERSION=3.7.6
+ENV  PATH=/opt/gatling/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+RUN  mkdir -p ${GATLING_HOME} && mkdir -p /tmp/downloads && curl -sf -o /tmp/downloads/gatling-$GATLING_VERSION.zip -L https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/$GATLING_VERSION/gatling-charts-highcharts-bundle-$GATLING_VERSION-bundle.zip && mkdir -p /tmp/archive && cd /tmp/archive && unzip /tmp/downloads/gatling-$GATLING_VERSION.zip && mv /tmp/archive/gatling-charts-highcharts-bundle-$GATLING_VERSION/* ${GATLING_HOME}/ && chmod ugo+x ${GATLING_HOME}/bin/*.sh && chmod -R g=u ${GATLING_HOME}
+WORKDIR /opt/gatling
+RUN echo "${GATLING_HOME}/bin/gatling.sh" > /tmp/gatling.sh && chmod +x /tmp/gatling.sh
+CMD ["/tmp/gatling.sh"]
+
+# buildah bud -t mygatling:3.7.6 ./Dockerfile-gatling
