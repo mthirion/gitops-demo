@@ -1,2 +1,3 @@
 resources:
 - ./builders/ImageStream-openjdk-11.json
+- ./quarkus-demo-app-public/overlays
