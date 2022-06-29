@@ -4,6 +4,7 @@ metadata:
   annotations:
     openshift.io/description: ""
     openshift.io/display-name: integration
+    argocd.argoproj.io/sync-wave: "-1"
   labels:
     kubernetes.io/metadata.name: integration
     openshift-pipelines.tekton.dev/namespace-reconcile-version: v1.5
