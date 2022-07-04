@@ -1,1 +1,2 @@
 resources:
+- ./quarkus-demo-app-public/overlays
