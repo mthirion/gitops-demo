@@ -1,7 +1,2 @@
 resources:
-- 
 
-configMapGenerator:
-- name: myapp-configmap
-  files:
-  - ../overlays/application.properties
