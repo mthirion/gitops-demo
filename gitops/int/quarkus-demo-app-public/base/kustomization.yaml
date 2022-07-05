@@ -1,4 +1,0 @@
-resources:
-- DeploymentConfig-quarkus-demo-app-public.json
-- ImageStream-quarkus-demo-app-public.json
-- Service-quarkus-demo-app-public.json
